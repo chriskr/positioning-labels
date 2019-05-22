@@ -2,7 +2,7 @@ import React from 'react';
 import { range } from 'lodash';
 import styled from 'styled-components';
 import { names as labels } from './testLabels';
-import { centerRect, moveRect } from './util';
+import { deOverlapRects, moveRect } from './util';
 import Input from './Input';
 
 const WIDTH = 800;
@@ -30,6 +30,7 @@ const Label = styled.div`
   position: absolute;
   top: 0;
   left: 0;
+  xoutline: 5px solid hsla(0, 100%, 50%, 0.5);
 `;
 
 const Svg = styled.svg`
@@ -81,7 +82,7 @@ class TestBubbleChart extends React.Component {
       width: `$WIDTH}px`,
       height: `${HEIGHT}px`
     };
-    console.log(this.state.data);
+    //console.log(this.state.data);
     return (
       <View>
         <Container ref={this.containerRef}>
@@ -141,19 +142,24 @@ class TestBubbleChart extends React.Component {
         const deltaTop = top - offsetTop - (rect.bottom - rect.top) / 2;
         return moveRect(rect, deltaLeft, deltaTop);
       });
+      const labels = this.state.data.map(({ label: { label } }) => label);
+      const [deOverlappedLabels, labelsBack] = deOverlapRects(
+        labelRects,
+        labels
+      );
       const data = this.state.data.map(
         ({ label: { label }, ...rest }, index) => {
-          const rect = labelRects[index];
+          const rect = deOverlappedLabels[index];
           return {
             ...rest,
             label: {
-              label,
+              label: label, //labelsBack[index],
               ...rect
             }
           };
         }
       );
-      console.log('>>', data);
+      //console.log('>>', data);
       this.setState({ data, mode: 1 });
     }
   }
