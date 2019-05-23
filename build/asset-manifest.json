@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/positioning-labels/build/static/css/main.a05168e0.chunk.css",
+    "main.js": "/positioning-labels/build/static/js/main.bd290f7f.chunk.js",
+    "main.js.map": "/positioning-labels/build/static/js/main.bd290f7f.chunk.js.map",
+    "runtime~main.js": "/positioning-labels/build/static/js/runtime~main.2caf41cd.js",
+    "runtime~main.js.map": "/positioning-labels/build/static/js/runtime~main.2caf41cd.js.map",
+    "static/js/2.81bfe7f2.chunk.js": "/positioning-labels/build/static/js/2.81bfe7f2.chunk.js",
+    "static/js/2.81bfe7f2.chunk.js.map": "/positioning-labels/build/static/js/2.81bfe7f2.chunk.js.map",
+    "index.html": "/positioning-labels/build/index.html",
+    "precache-manifest.aa0796711c8e7cbe44dc22237d675d1c.js": "/positioning-labels/build/precache-manifest.aa0796711c8e7cbe44dc22237d675d1c.js",
+    "service-worker.js": "/positioning-labels/build/service-worker.js",
+    "static/css/main.a05168e0.chunk.css.map": "/positioning-labels/build/static/css/main.a05168e0.chunk.css.map"
+  }
+}
