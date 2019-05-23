@@ -10,7 +10,7 @@ const HEIGHT = 500;
 const MAX_RADIUS = 50;
 const MIN_RADIUS = 10;
 const MIN_FONT_SIZE = 10;
-const MAX_FONT_SIZE = 32;
+const MAX_FONT_SIZE = 24;
 
 const DEFAULT_BUBBLE_COUNT = 50;
 
@@ -94,7 +94,6 @@ class TestBubbleChart extends React.Component {
       width: `$WIDTH}px`,
       height: `${HEIGHT}px`,
     };
-    //console.log(this.state.data);
     return (
       <View>
         <Container ref={this.containerRef}>
@@ -155,11 +154,15 @@ class TestBubbleChart extends React.Component {
         const deltaTop = top - offsetTop - (rect.bottom - rect.top) / 2;
         return moveRect(rect, deltaLeft, deltaTop);
       });
-      const radiuses = this.state.data.map(({ radius }) => radius);
-      const deOverlappedLabels = layoutRects(labelRects, radiuses);
+      const bubbles = this.state.data.map(({ radius, left, top }) => ({
+        radius,
+        left,
+        top,
+      }));
+      const layedOutLabels = layoutRects(labelRects, bubbles);
       const data = this.state.data.map(
         ({ label: { label }, ...rest }, index) => {
-          const rect = deOverlappedLabels[index];
+          const rect = layedOutLabels[index];
           return {
             ...rest,
             label: {
@@ -169,7 +172,6 @@ class TestBubbleChart extends React.Component {
           };
         }
       );
-      //console.log('>>', data);
       this.setState({ data, mode: 1 });
     }
   }

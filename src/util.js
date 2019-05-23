@@ -72,8 +72,8 @@ const getOverlap = (
 
 export const layoutRects = (
   rects,
-  radiuses,
-  minMargin = { left: 5, top: 5, right: 5, bottom: 5 }
+  bubbles,
+  minMargin = { left: 2, top: 2, right: 2, bottom: 2 }
 ) => {
   const centerLeft =
     sum(rects.map(({ left, right }) => left + (right - left) / 2)) /
@@ -96,22 +96,30 @@ export const layoutRects = (
       rect,
       rectWithMargin: addMargin(rect, minMargin),
       index,
-      radius: radiuses[index],
+      bubble: bubbles[index],
     }))
-    .sort((a, b) => b.radius - a.radius);
+    .sort((a, b) => b.bubble.radius - a.bubble.radius);
 
   const layedOutRects = [];
 
   withDistance.forEach(rect => {
-    let count = 10;
-    while (
-      layedOutRects.some(layedOutRect =>
-        isOverlapping(rect.rectWithMargin, layedOutRect.rectWithMargin)
-      ) &&
-      count-- > 0
-    ) {
-      _layoutBox(rect, layedOutRects, center);
-    }
+    const candRects = [
+      [center, {}],
+      [null, { moveRight: false, moveDown: false }],
+      [null, { moveRight: true, moveDown: false }],
+      [null, { moveRight: false, moveDown: true }],
+      [null, { moveRight: true, moveDown: true }],
+    ].map(([center, strategy]) =>
+      _getCandidates(rect, layedOutRects, center, strategy)
+    );
+    const startPoint = {
+      left: rect.bubble.left,
+      right: rect.bubble.left,
+      top: rect.bubble.top,
+      bottom: rect.bubble.top,
+    };
+    const bestCandidate = _getBestCandidate(startPoint, candRects);
+    rect.rectWithMargin = bestCandidate;
     layedOutRects.push(rect);
   });
 
@@ -127,30 +135,60 @@ export const layoutRects = (
     .map(({ rectWithMargin, label }) => addMargin(rectWithMargin, minusMargin));
 };
 
-const _layoutBox = (rect, layedOutRects, center) => {
+const _getCandidates = (rect, layedOutRects, center, strategy) => {
+  let count = 10;
+  let candRect = { ...rect.rectWithMargin };
+  while (
+    layedOutRects.some(layedOutRect =>
+      isOverlapping(candRect, layedOutRect.rectWithMargin)
+    ) &&
+    count-- > 0
+  ) {
+    candRect = _layoutBox({ rect: candRect, layedOutRects, center, strategy });
+  }
+  return candRect;
+};
+
+const _getBestCandidate = (startPoint, candidates) => {
+  const withDistance = candidates.map(candidate => ({
+    candidate,
+    distance: getDistance(startPoint, getCenter(candidate)),
+  }));
+  const { candidate } = withDistance.reduce(
+    (bestCandidate, candidate) =>
+      candidate.distance < bestCandidate.distance ? candidate : bestCandidate,
+    { distance: Infinity }
+  );
+  return candidate;
+};
+
+const _layoutBox = ({ rect, layedOutRects, center = null, strategy = {} }) => {
   layedOutRects.forEach(layedOutRect => {
-    if (isOverlapping(rect.rectWithMargin, layedOutRect.rectWithMargin)) {
-      const centerRect = getCenter(rect.rectWithMargin);
-      const deltaLeft =
-        centerRect.left > center.left
-          ? // move right
-            layedOutRect.rectWithMargin.right - rect.rectWithMargin.left
-          : // move left
-            layedOutRect.rectWithMargin.left - rect.rectWithMargin.right;
-      const deltaTop =
-        centerRect.top > center.top
-          ? // move down
-            layedOutRect.rectWithMargin.bottom - rect.rectWithMargin.top
-          : // move up
-            layedOutRect.rectWithMargin.top - rect.rectWithMargin.bottom;
+    if (isOverlapping(rect, layedOutRect.rectWithMargin)) {
+      const centerRect = getCenter(rect);
+      const moveRight = center
+        ? centerRect.left > center.left
+        : strategy.moveRight;
+      const deltaLeft = moveRight
+        ? // move right
+          layedOutRect.rectWithMargin.right - rect.left
+        : // move left
+          layedOutRect.rectWithMargin.left - rect.right;
+      const moveDown = center ? centerRect.top > center.top : strategy.moveDown;
+      const deltaTop = moveDown
+        ? // move down
+          layedOutRect.rectWithMargin.bottom - rect.top
+        : // move up
+          layedOutRect.rectWithMargin.top - rect.bottom;
       const isMoveLeft = Math.abs(deltaLeft) < Math.abs(deltaTop);
-      rect.rectWithMargin = moveRect(
-        rect.rectWithMargin,
+      rect = moveRect(
+        rect,
         isMoveLeft ? deltaLeft : 0,
         isMoveLeft ? 0 : deltaTop
       );
     }
   });
+  return rect;
 };
 
 const _isOverlapping = (
