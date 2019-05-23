@@ -4,10 +4,28 @@
   "private": true,
   "dependencies": {
     "lodash": "^4.17.11",
+    "prettier": "^1.17.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.1",
-    "styled-components": "^4.2.0"
+    "styled-components": "^4.2.0",
+    "typescript": "^3.4.5"
+  },
+  "devDependencies": {
+    "@types/lodash": "4.14.120",
+    "@types/react-dom": "16.8.0",
+    "@types/react-redux": "7.0.5",
+    "@types/styled-components": "4.1.15",
+    "@types/webpack-env": "1.13.6",
+    "@typescript-eslint/eslint-plugin": "1.7.0",
+    "@typescript-eslint/parser": "1.7.0",
+    "eslint": "5.16.0",
+    "eslint-config-prettier": "4.2.0",
+    "eslint-import-resolver-webpack": "0.11.1",
+    "eslint-plugin-import": "2.17.2",
+    "eslint-plugin-prettier": "3.0.1",
+    "eslint-plugin-react": "7.12.4",
+    "eslint-plugin-sort-class-members": "1.4.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -29,6 +47,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {}
+  }
 }

@@ -1,0 +1,13 @@
+.build_cache
+.github
+.idea
+dist
+node_modules
+src/js/ardoq/typings
+src/js/customLibs
+src/js/transpiledLibs
+src/img
+src/less
+src/resources
+test/mockdata
+webpack/*

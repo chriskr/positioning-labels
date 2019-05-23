@@ -2,7 +2,7 @@ import React from 'react';
 import { range } from 'lodash';
 import styled from 'styled-components';
 import { names as labels } from './testLabels';
-import { deOverlapRects, moveRect } from './util';
+import { layoutRects, moveRect } from './util';
 import Input from './Input';
 
 const WIDTH = 800;
@@ -30,7 +30,7 @@ const Label = styled.div`
   position: absolute;
   top: 0;
   left: 0;
-  xoutline: 5px solid hsla(0, 100%, 50%, 0.5);
+  line-height: 1;
 `;
 
 const Svg = styled.svg`
@@ -59,7 +59,7 @@ const buildExampleData = (n = 50) => {
     const label = {
       label: getRandomLabel(),
       left: 0,
-      top: 0
+      top: 0,
     };
     return { radius, left, top, color, label };
   });
@@ -73,14 +73,14 @@ class TestBubbleChart extends React.Component {
   state = {
     data: buildExampleData(DEFAULT_BUBBLE_COUNT),
     mode: 0,
-    bubbleCount: DEFAULT_BUBBLE_COUNT
+    bubbleCount: DEFAULT_BUBBLE_COUNT,
   };
   svgRef = React.createRef();
   containerRef = React.createRef();
   render() {
     const style = {
       width: `$WIDTH}px`,
-      height: `${HEIGHT}px`
+      height: `${HEIGHT}px`,
     };
     //console.log(this.state.data);
     return (
@@ -98,7 +98,7 @@ class TestBubbleChart extends React.Component {
           {this.state.data.map(({ label: { label, top, left } }) => {
             const style = {
               left: `${left}px`,
-              top: `${top}px`
+              top: `${top}px`,
             };
             return (
               <Label style={style} className="label">
@@ -116,7 +116,7 @@ class TestBubbleChart extends React.Component {
               this.setState({
                 bubbleCount,
                 data: buildExampleData(bubbleCount),
-                mode: 0
+                mode: 0,
               })
             }
           />
@@ -142,20 +142,16 @@ class TestBubbleChart extends React.Component {
         const deltaTop = top - offsetTop - (rect.bottom - rect.top) / 2;
         return moveRect(rect, deltaLeft, deltaTop);
       });
-      const labels = this.state.data.map(({ label: { label } }) => label);
-      const [deOverlappedLabels, labelsBack] = deOverlapRects(
-        labelRects,
-        labels
-      );
+      const deOverlappedLabels = layoutRects(labelRects);
       const data = this.state.data.map(
         ({ label: { label }, ...rest }, index) => {
           const rect = deOverlappedLabels[index];
           return {
             ...rest,
             label: {
-              label: label, //labelsBack[index],
-              ...rect
-            }
+              label,
+              ...rect,
+            },
           };
         }
       );
