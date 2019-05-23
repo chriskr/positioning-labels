@@ -2,6 +2,7 @@
   "name": "label-positioning",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://chriskr.github.io/positioning-labels/dist/",
   "dependencies": {
     "lodash": "^4.17.11",
     "prettier": "^1.17.1",

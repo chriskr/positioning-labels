@@ -9,8 +9,18 @@ const WIDTH = 800;
 const HEIGHT = 500;
 const MAX_RADIUS = 50;
 const MIN_RADIUS = 10;
+const MIN_FONT_SIZE = 10;
+const MAX_FONT_SIZE = 32;
 
 const DEFAULT_BUBBLE_COUNT = 50;
+
+const getFontSize = radius => {
+  return (
+    MIN_FONT_SIZE +
+    ((radius - MIN_RADIUS) / (MAX_RADIUS - MIN_RADIUS)) *
+      (MAX_FONT_SIZE - MIN_FONT_SIZE)
+  );
+};
 
 const Circle = styled.circle`
   stroke-width: 1;
@@ -31,6 +41,8 @@ const Label = styled.div`
   top: 0;
   left: 0;
   line-height: 1;
+  font-size: 10px;
+  font-weight: 300;
 `;
 
 const Svg = styled.svg`
@@ -95,10 +107,11 @@ class TestBubbleChart extends React.Component {
               <Circle r={r} cx={cx} cy={cy} fill={color} />
             ))}
           </Svg>
-          {this.state.data.map(({ label: { label, top, left } }) => {
+          {this.state.data.map(({ label: { label, top, left }, radius }) => {
             const style = {
               left: `${left}px`,
               top: `${top}px`,
+              fontSize: `${getFontSize(radius)}px`,
             };
             return (
               <Label style={style} className="label">
@@ -142,7 +155,8 @@ class TestBubbleChart extends React.Component {
         const deltaTop = top - offsetTop - (rect.bottom - rect.top) / 2;
         return moveRect(rect, deltaLeft, deltaTop);
       });
-      const deOverlappedLabels = layoutRects(labelRects);
+      const radiuses = this.state.data.map(({ radius }) => radius);
+      const deOverlappedLabels = layoutRects(labelRects, radiuses);
       const data = this.state.data.map(
         ({ label: { label }, ...rest }, index) => {
           const rect = deOverlappedLabels[index];

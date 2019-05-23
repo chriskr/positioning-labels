@@ -72,6 +72,7 @@ const getOverlap = (
 
 export const layoutRects = (
   rects,
+  radiuses,
   minMargin = { left: 5, top: 5, right: 5, bottom: 5 }
 ) => {
   const centerLeft =
@@ -95,8 +96,9 @@ export const layoutRects = (
       rect,
       rectWithMargin: addMargin(rect, minMargin),
       index,
+      radius: radiuses[index],
     }))
-    .sort((a, b) => a.centerDistance - b.centerDistance);
+    .sort((a, b) => b.radius - a.radius);
 
   const layedOutRects = [];
 
