@@ -5,7 +5,7 @@ const nop = () => null;
 class Input extends React.Component {
   onInput = ({ target: { value } }) => this.setState({ value });
   state = {
-    value: ''
+    value: '',
   };
 
   submit = () => this.props.onChange && this.props.onChange(this.state.value);
@@ -22,7 +22,7 @@ class Input extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: props.value
+      value: props.value,
     };
   }
 
@@ -35,7 +35,6 @@ class Input extends React.Component {
         value={this.state.value}
         placeholder={placeholder}
         onInput={this.onInput}
-        onBlur={this.submit}
         onChange={nop}
         onKeyDown={this.onKeyDown}
       />

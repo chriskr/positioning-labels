@@ -73,7 +73,8 @@ const getOverlap = (
 export const layoutRects = (
   rects,
   bubbles,
-  minMargin = { left: 2, top: 2, right: 2, bottom: 2 }
+  constraints,
+  minMargin = { left: 2, top: 1, right: 2, bottom: 1 }
 ) => {
   const centerLeft =
     sum(rects.map(({ left, right }) => left + (right - left) / 2)) /
@@ -100,7 +101,7 @@ export const layoutRects = (
     }))
     .sort((a, b) => b.bubble.radius - a.bubble.radius);
 
-  const layedOutRects = [];
+  let layedOutRects = [...constraints.map(rect => ({ rectWithMargin: rect }))];
 
   withDistance.forEach(rect => {
     const candRects = [
@@ -110,7 +111,7 @@ export const layoutRects = (
       [null, { moveRight: false, moveDown: true }],
       [null, { moveRight: true, moveDown: true }],
     ].map(([center, strategy]) =>
-      _getCandidates(rect, layedOutRects, center, strategy)
+      _getCandidate(rect, layedOutRects, center, strategy)
     );
     const startPoint = {
       left: rect.bubble.left,
@@ -122,6 +123,8 @@ export const layoutRects = (
     rect.rectWithMargin = bestCandidate;
     layedOutRects.push(rect);
   });
+
+  layedOutRects = layedOutRects.slice(constraints.length);
 
   const minusMargin = {
     left: -minMargin.left,
@@ -135,8 +138,8 @@ export const layoutRects = (
     .map(({ rectWithMargin, label }) => addMargin(rectWithMargin, minusMargin));
 };
 
-const _getCandidates = (rect, layedOutRects, center, strategy) => {
-  let count = 10;
+const _getCandidate = (rect, layedOutRects, center, strategy) => {
+  let count = 16;
   let candRect = { ...rect.rectWithMargin };
   while (
     layedOutRects.some(layedOutRect =>
@@ -150,16 +153,44 @@ const _getCandidates = (rect, layedOutRects, center, strategy) => {
 };
 
 const _getBestCandidate = (startPoint, candidates) => {
-  const withDistance = candidates.map(candidate => ({
-    candidate,
-    distance: getDistance(startPoint, getCenter(candidate)),
-  }));
-  const { candidate } = withDistance.reduce(
-    (bestCandidate, candidate) =>
-      candidate.distance < bestCandidate.distance ? candidate : bestCandidate,
-    { distance: Infinity }
-  );
+  const withDistance = candidates
+    .map(candidate => ({
+      candidate,
+      pysicalDistance: getPysicalDistance(startPoint, candidate),
+      distance: getDistance(startPoint, getCenter(candidate)),
+    }))
+    .sort((a, b) =>
+      a.pysicalDistance === 0 && b.pysicalDistance === 0
+        ? a.distance - b.distance
+        : a.pysicalDistance - b.pysicalDistance
+    );
+  const [{ candidate }] = withDistance;
   return candidate;
+};
+
+const getPysicalDistance = (center, rect) => {
+  const { left: centerLeft, top: centerTop } = center;
+  const {
+    left: rectLeft,
+    top: rectTop,
+    right: rectRight,
+    bottom: rectBottom,
+  } = rect;
+
+  const horizontalDistance =
+    rectLeft <= centerLeft && rectRight >= centerLeft
+      ? 0
+      : rectLeft > centerLeft
+      ? rectLeft - centerLeft
+      : centerLeft - rectRight;
+  const verticalDistance =
+    rectTop <= centerTop && rectBottom >= centerTop
+      ? 0
+      : rectTop > centerTop
+      ? rectTop - centerTop
+      : centerTop - rectBottom;
+
+  return (horizontalDistance ** 2 + verticalDistance ** 2) ** 0.5;
 };
 
 const _layoutBox = ({ rect, layedOutRects, center = null, strategy = {} }) => {
@@ -180,12 +211,11 @@ const _layoutBox = ({ rect, layedOutRects, center = null, strategy = {} }) => {
           layedOutRect.rectWithMargin.bottom - rect.top
         : // move up
           layedOutRect.rectWithMargin.top - rect.bottom;
-      const isMoveLeft = Math.abs(deltaLeft) < Math.abs(deltaTop);
-      rect = moveRect(
-        rect,
-        isMoveLeft ? deltaLeft : 0,
-        isMoveLeft ? 0 : deltaTop
-      );
+
+      rect = _getBestCandidate(centerRect, [
+        moveRect(rect, deltaLeft, 0),
+        moveRect(rect, 0, deltaTop),
+      ]);
     }
   });
   return rect;
