@@ -147,7 +147,14 @@ const _getCandidate = (rect, layedOutRects, center, strategy) => {
     ) &&
     count-- > 0
   ) {
-    candRect = _layoutBox({ rect: candRect, layedOutRects, center, strategy });
+    const { left, top } = rect.bubble;
+    candRect = _layoutBox({
+      rect: candRect,
+      layedOutRects,
+      center,
+      strategy,
+      bubbleCenter: { left, right: left, top, bottom: top },
+    });
   }
   return candRect;
 };
@@ -193,7 +200,13 @@ const getPysicalDistance = (center, rect) => {
   return (horizontalDistance ** 2 + verticalDistance ** 2) ** 0.5;
 };
 
-const _layoutBox = ({ rect, layedOutRects, center = null, strategy = {} }) => {
+const _layoutBox = ({
+  rect,
+  layedOutRects,
+  center = null,
+  strategy = {},
+  bubbleCenter,
+}) => {
   layedOutRects.forEach(layedOutRect => {
     if (isOverlapping(rect, layedOutRect.rectWithMargin)) {
       const centerRect = getCenter(rect);
@@ -212,7 +225,7 @@ const _layoutBox = ({ rect, layedOutRects, center = null, strategy = {} }) => {
         : // move up
           layedOutRect.rectWithMargin.top - rect.bottom;
 
-      rect = _getBestCandidate(centerRect, [
+      rect = _getBestCandidate(bubbleCenter, [
         moveRect(rect, deltaLeft, 0),
         moveRect(rect, 0, deltaTop),
       ]);
