@@ -225,10 +225,25 @@ const _layoutBox = ({
         : // move up
           layedOutRect.rectWithMargin.top - rect.bottom;
 
-      rect = _getBestCandidate(bubbleCenter, [
-        moveRect(rect, deltaLeft, 0),
-        moveRect(rect, 0, deltaTop),
-      ]);
+      const newRectVertical = moveRect(rect, deltaLeft, 0);
+      const newRectHorizontal = moveRect(rect, 0, deltaTop);
+      const isOverlappingVertically = layedOutRects.some(layedOutRect =>
+        isOverlapping(newRectVertical, layedOutRect.rectWithMargin)
+      );
+      const isOverlappingHorizontally = layedOutRects.some(layedOutRect =>
+        isOverlapping(newRectHorizontal, layedOutRect.rectWithMargin)
+      );
+
+      if (isOverlappingVertically && !isOverlappingHorizontally) {
+        rect = newRectHorizontal;
+      } else if (!isOverlappingVertically && isOverlappingHorizontally) {
+        rect = newRectVertical;
+      } else {
+        rect = _getBestCandidate(bubbleCenter, [
+          newRectVertical,
+          newRectHorizontal,
+        ]);
+      }
     }
   });
   return rect;
